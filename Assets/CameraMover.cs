@@ -7,9 +7,12 @@ public class CameraMover : MonoBehaviour {
 	float topDistance = 1f;
 	float bottomDistance = 2f;
 
+	const float ratio = 2.8397f * 750f / 1334f;
+
 	GameObject player;
 	// Use this for initialization
 	void Start () {
+		camera.orthographicSize = ratio * (camera.GetScreenHeight()/camera.GetScreenWidth());
 		player = GameObject.FindGameObjectWithTag ("Player");
 		if (player == null) {
 			Debug.LogError("Player is null!");
