@@ -10,11 +10,10 @@ public class PlayerController : MonoBehaviour {
 	float flyingSpeed = 0.05f;
 	Vector3 velocity = Vector3.zero;
 	bool isEnd = false;
-	
-	const float ratio = 2.8397f * 750f / 1334f;
-	float screenWidth;
 
-	Collider2D myCollider;
+	float screenWidth = 3.2f;
+
+	float objectWidth = 0.24f;
 	public GameObject rainbow;
 
 	// Should not create new object in Update() or FixedUpdate(), so we need these variables
@@ -23,10 +22,7 @@ public class PlayerController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		Camera cam = Camera.main;
-		float height = 2f * ratio * (camera.GetScreenHeight()/camera.GetScreenWidth()); // height is always twice as orthographicSize
-		screenWidth = height * cam.aspect;
-		myCollider = GetComponent<Collider2D> ();
+		Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
 		// Create 5 first rainbows
 		for (int i = 0; i < 5; i++) {
@@ -55,13 +51,18 @@ public class PlayerController : MonoBehaviour {
 			_v.x = Input.acceleration.x / 10;
 			velocity = _v;
 		}
+
+		// God mode
+		if (Input.GetKeyDown (KeyCode.UpArrow) || Input.touches.Length > 1) {
+			velocity += Vector3.up * 0.1f;
+		}
 	}
 
 	void FixedUpdate () {
 		transform.position += velocity;
 		_p = transform.position;
 		// If eached the edges, move to another edge
-		if (Mathf.Abs(_p.x) > (screenWidth + myCollider.bounds.size.x) / 2) {
+		if (Mathf.Abs(_p.x) > (screenWidth + objectWidth) / 2) {
 			_p.x = - _p.x + 0.01f * (_p.x / Mathf.Abs(_p.x));
 			transform.position = _p;
 		}

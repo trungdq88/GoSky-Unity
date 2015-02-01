@@ -18,11 +18,10 @@ public class RainbowController : MonoBehaviour {
 	float alphaLevel = 1f;
 
 	SpriteRenderer spriteRenderer;
-	Collider2D myCollider;
-	Renderer myRenderer;
 
-	const float ratio = 2.8397f * 750f / 1334f;	
-	float screenWidth;
+
+	float objectWidth = 0.64f;
+	float screenWidth = 3.2f;
 
 
 	Vector3 _p = Vector3.zero;
@@ -30,12 +29,6 @@ public class RainbowController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		spriteRenderer = transform.GetComponent<SpriteRenderer> ();
-		myRenderer = transform.GetComponent<Renderer> ();
-		myCollider = GetComponent<Collider2D> ();
-
-		Camera cam = Camera.main;
-		float height = 2f * ratio * (camera.GetScreenHeight()/camera.GetScreenWidth()); // height is always twice as orthographicSize
-		screenWidth = height * cam.aspect;
 
 		if (!gameObject.tag.Equals ("FirstRainbow")) {
 			highBlock += Random.Range (minDistance, maxDistance);
@@ -46,6 +39,7 @@ public class RainbowController : MonoBehaviour {
 			_p = transform.localScale;
 			_p.x = Random.Range (minScale, maxScale);
 			transform.localScale = _p;
+			objectWidth *= _p.x;
 
 			// This is for the root rainbow, which will be used to copy to other rainbows
 			if (highBlock <= -1000f) {
@@ -71,7 +65,7 @@ public class RainbowController : MonoBehaviour {
 		transform.position = _p;
 
 
-		if (Mathf.Abs(_p.x) > (screenWidth - myCollider.bounds.size.x) / 2) {
+		if (Mathf.Abs(_p.x) > (screenWidth - objectWidth) / 2) {
 			speed *= -1;
 		}
 	}
