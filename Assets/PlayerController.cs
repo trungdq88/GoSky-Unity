@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour {
 	float rotateSpeed = 1f;
 
 	public GameObject rainbow;
+	Animator animator;
 
 	// Should not create new object in Update() or FixedUpdate(), so we need these variables
 	Vector3 _p;
@@ -25,7 +26,7 @@ public class PlayerController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Screen.sleepTimeout = SleepTimeout.NeverSleep;
-
+		animator = GetComponentInChildren<Animator> ();
 		// Create 5 first rainbows
 		for (int i = 0; i < 5; i++) {
 			CreateRainbow();
@@ -90,6 +91,7 @@ public class PlayerController : MonoBehaviour {
 	void OnCollisionEnter2D(Collision2D collision) {
 		if (collision.collider.tag.Equals ("Finish")) {
 			// Reached the bottom, end the game
+			animator.SetTrigger("die");
 			isEnd = true;
 			return;
 		}
