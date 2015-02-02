@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour {
 	int score = 0;
 
 	public float jumpSpeed = 4f;
-	public float downSpeed = 2f;
+	public float downSpeed = 1f;
 	float flyingSpeed = 0.05f;
 	Vector3 velocity = Vector3.zero;
 	bool isEnd = false;
@@ -14,6 +14,8 @@ public class PlayerController : MonoBehaviour {
 	float screenWidth = 3.2f;
 
 	float objectWidth = 0.24f;
+	float rotateSpeed = 1f;
+
 	public GameObject rainbow;
 
 	// Should not create new object in Update() or FixedUpdate(), so we need these variables
@@ -59,6 +61,23 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void FixedUpdate () {
+		if (isEnd) {
+			return;
+		}
+//		var v = new Vector3(0, rigidbody2D.velocity.x, rigidbody2D.velocity.y) + velocity;
+//
+//		transform.rotation = Quaternion.LookRotation(v);
+
+		
+		_p = transform.localScale;
+		_p.y = velocity.x > 0 ? 1 : -1;
+		transform.localScale = _p;
+		
+		var dir = rigidbody2D.velocity  + new Vector2(velocity.x, velocity.y) * 60f;
+		var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+		rigidbody2D.MoveRotation(angle);
+
+
 		transform.position += velocity;
 		_p = transform.position;
 		// If eached the edges, move to another edge

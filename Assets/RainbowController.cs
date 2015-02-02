@@ -4,7 +4,7 @@ using System.Collections;
 public class RainbowController : MonoBehaviour {
 	public static float highBlock = -1200f;
 
-	float minDistance = 1f;
+	float minDistance = 1.1f;
 	float maxDistance = 1.5f;
 
 	float maxScale = 1f;
