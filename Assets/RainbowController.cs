@@ -12,6 +12,9 @@ public class RainbowController : MonoBehaviour {
 
 	float minSpeed = 0.005f;
 	float maxSpeed = 0.03f;
+
+	float springPercent = 0.1f;
+
 	float speed = 0f;
 	float dying = 0f; // 0 = still living, > 0: dying
 	float dieDelay = 1f;
@@ -31,15 +34,45 @@ public class RainbowController : MonoBehaviour {
 		spriteRenderer = transform.GetComponent<SpriteRenderer> ();
 
 		if (!gameObject.tag.Equals ("FirstRainbow")) {
+			// See if this is a spring rainbow or not
+			bool isSpring = Random.Range(1, 100) < springPercent * 100;
+
+			// Calculate new position
 			highBlock += Random.Range (minDistance, maxDistance);
-			speed = Random.Range (minSpeed, maxSpeed);
 			_p = transform.position;
 			_p.y = highBlock;
+			_p.x = Random.Range(-screenWidth / 2 + objectWidth / 2, screenWidth / 2  - objectWidth / 2);
 			transform.position = _p;
+			
+			// Set random speed (or not moving if this rainbow has a spring)
+			speed = isSpring ? 0 : Random.Range (minSpeed, maxSpeed);
+
+			// Set random size
 			_p = transform.localScale;
 			_p.x = Random.Range (minScale, maxScale);
 			transform.localScale = _p;
+			
+			// Re-calc object width after resize
 			objectWidth *= _p.x;
+
+			// Resize or remove the spring
+			foreach (Transform child in transform){
+				if (child.gameObject.tag == "ScorePoint") {
+					_p = transform.localScale;
+					_p.x = 1/_p.x;
+					child.transform.localScale = _p;
+				}
+				if(child.gameObject.tag == "Spring"){
+					_p = transform.localScale;
+					if (isSpring) {
+						_p.x = 1/_p.x;
+					} else {
+						_p = Vector3.zero;
+					}
+					child.transform.localScale = _p;
+				}
+			}
+
 
 			// This is for the root rainbow, which will be used to copy to other rainbows
 			if (highBlock <= -1000f) {

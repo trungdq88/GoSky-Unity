@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
 	int score = 0;
 
-	public float jumpSpeed = 4f;
-	public float downSpeed = 1f;
+	public float jumpSpeed = 1f;
+	public float downSpeed = 0.3f;
 	float flyingSpeed = 0.05f;
 	Vector3 velocity = Vector3.zero;
 	bool isEnd = false;
@@ -62,26 +63,26 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void FixedUpdate () {
+		// Is the game ended?
 		if (isEnd) {
 			return;
 		}
-//		var v = new Vector3(0, rigidbody2D.velocity.x, rigidbody2D.velocity.y) + velocity;
-//
-//		transform.rotation = Quaternion.LookRotation(v);
 
-		
+		// Flip the fish to velocity
 		_p = transform.localScale;
 		_p.y = velocity.x > 0 ? 1 : -1;
 		transform.localScale = _p;
-		
+
+		// Rotate the fish to velocity
 		var dir = rigidbody2D.velocity  + new Vector2(velocity.x, velocity.y) * 60f;
 		var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 		rigidbody2D.MoveRotation(angle);
 
-
+		// Move the fish horizontally
 		transform.position += velocity;
-		_p = transform.position;
+
 		// If eached the edges, move to another edge
+		_p = transform.position;
 		if (Mathf.Abs(_p.x) > (screenWidth + objectWidth) / 2) {
 			_p.x = - _p.x + 0.01f * (_p.x / Mathf.Abs(_p.x));
 			transform.position = _p;
@@ -89,18 +90,32 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void OnCollisionEnter2D(Collision2D collision) {
+		// Collide with the bottom
 		if (collision.collider.tag.Equals ("Finish")) {
 			// Reached the bottom, end the game
 			animator.SetTrigger("die");
 			isEnd = true;
 			return;
 		}
-		if (collision.collider.transform.position.y < transform.position.y) {
-			// If the rainbow is below the fish, then jump up
-			rigidbody2D.velocity = Vector2.up * jumpSpeed;
-		} else {
-			// If the rainbow is above the fish, "bounch" the fish down
-			rigidbody2D.velocity = - Vector2.up * downSpeed;
+
+		// Collide with the rainbows
+		if (collision.collider.tag.Equals ("Rainbow")
+		    || collision.collider.tag.Equals ("FirstRainbow")) {
+			if (collision.collider.transform.position.y < transform.position.y) {
+				// If the rainbow is below the fish, then jump up
+				rigidbody2D.velocity = Vector2.up * jumpSpeed;
+			} else {
+				// If the rainbow is above the fish, "bounch" the fish down
+				rigidbody2D.velocity = - Vector2.up * downSpeed;
+			}
+		} else
+		// Collide with the springs
+		if (collision.collider.tag.Equals ("Spring")) {
+			rigidbody2D.velocity = Vector2.up * jumpSpeed * 1.4f;
+		}
+		// Collide with the black hole
+		if (collision.collider.tag.Equals ("TheBlackHole")) {
+			// Do something here?
 		}
 	}
 
@@ -110,6 +125,13 @@ public class PlayerController : MonoBehaviour {
 			CreateRainbow ();
 			score++;
 			Debug.Log("Score: " + score);
+
+			GameObject[] objs = GameObject.FindGameObjectsWithTag("ScoreText");
+			foreach (GameObject obj in objs) {
+				Text t = obj.GetComponent<Text>();
+				t.text = score.ToString();
+
+			}
 		}
 	}
 
