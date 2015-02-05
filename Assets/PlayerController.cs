@@ -11,8 +11,11 @@ public class PlayerController : MonoBehaviour {
 	float flyingSpeed = 0.05f;
 	Vector3 velocity = Vector3.zero;
 
+	Vector3 centerPoint;
+
 	bool isEnd = false;
 	bool isFalling = false;
+	bool isPaused = true; // The first value is true to match with the GameStartScreen
 
 	float screenWidth = 3.2f;
 
@@ -23,8 +26,17 @@ public class PlayerController : MonoBehaviour {
 	float starDelayCount = 0f;
 	float starDistance = 0.3f;
 
-	public GameObject rainbow; // Set via GUI
-	public GameObject star; // Set via GUI
+	// Set via GUI
+	public GameObject rainbow;
+	public GameObject star; 
+	public GameObject gameOver;
+	public GameObject bestScore;
+	public GameObject scoreHolder;
+	public GameObject bestScoreHolder;
+	public GameObject resumeBtn; 
+
+	int bestScoreValue = 0;
+
 	Animator animator;
 
 	// Should not create new object in Update() or FixedUpdate(), so we need these variables
@@ -35,7 +47,22 @@ public class PlayerController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
+		centerPoint = new Vector3 ( Screen.width / 2, Screen.height / 2f,  10f);
+		_p = centerPoint;
+		_p.y -= 90f;
+		bestScoreHolder.transform.position = _p;
+		_p.y += 90f + 170f;
+		scoreHolder.transform.position = _p;
+
 		animator = GetComponentInChildren<Animator> ();
+
+		gameOver.renderer.enabled = false;
+		bestScore.renderer.enabled = false;
+		resumeBtn.renderer.enabled = false;
+		setText("BestScoreText", "");
+
+		bestScoreValue = PlayerPrefs.GetInt("bestScore", 0);
 
 		// Create 5 first rainbows
 		for (int i = 0; i < 5; i++) {
@@ -56,7 +83,7 @@ public class PlayerController : MonoBehaviour {
 			isFalling = true;
 			gameObject.layer = LayerMask.NameToLayer("NoRainbow");
 
-			
+			// If the fish is falling, tap will skip the falling movie
 			if (Input.GetKeyDown (KeyCode.Space) || 
 			    Input.touches.Length > 0) {
 				// Go to bottom immediately
@@ -66,14 +93,29 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		if (isEnd) {
+			// If the game is end, tap will restart the game
 			if (Input.GetKeyDown (KeyCode.Space) || 
 			    Input.touches.Length > 0) {
 				// Restart game
 				RainbowController.highBlock = -1200f;
 				Application.LoadLevel( Application.loadedLevel );
 			}
+			gameOver.renderer.enabled = true;
+			bestScore.renderer.enabled = true;
+			setText("BestScoreText", bestScoreValue.ToString());
+
+			scoreHolder.transform.position = centerPoint;
 			return;
 		}
+
+		// If game is playing, tap will pause the game
+		if (!isFalling && Input.GetKeyDown (KeyCode.Space) || 
+		    Input.touches.Length > 0) {
+			// Pause game
+			isPaused = !isPaused;
+			updateGameState();
+		}
+
 		if (Input.GetKeyDown (KeyCode.RightArrow)) {
 			velocity = Vector3.right * flyingSpeed;
 		} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
@@ -153,17 +195,34 @@ public class PlayerController : MonoBehaviour {
 			collider.tag = "ScorePointExpired";
 			CreateRainbow ();
 			score++;
-			Debug.Log("Score: " + score);
+			setText("ScoreText", score.ToString());
 
-			GameObject[] objs = GameObject.FindGameObjectsWithTag("ScoreText");
-			foreach (GameObject obj in objs) {
-				Text t = obj.GetComponent<Text>();
-				t.text = score.ToString();
-
+			if (score > bestScoreValue) {
+				bestScoreValue = score;
+				PlayerPrefs.SetInt("bestScore", bestScoreValue);
 			}
 		}
 	}
-	
+
+	void setText(string tag, string text) {
+		GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+		foreach (GameObject obj in objs) {
+			Text t = obj.GetComponent<Text>();
+			t.text = text;
+		}
+	}
+	void updateGameState() {
+		if (isPaused) {
+			Time.timeScale = 0;
+			AudioListener.pause = true;
+			resumeBtn.renderer.enabled = true;
+		} else {
+			Time.timeScale = 1;
+			AudioListener.pause = false;
+			resumeBtn.renderer.enabled = false;
+		}
+
+	}
 	void CreateRainbow() {
 		Instantiate (rainbow, new Vector3(0, 3f), Quaternion.identity);
 	}

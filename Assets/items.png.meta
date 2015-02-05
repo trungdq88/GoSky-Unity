@@ -31,6 +31,7 @@ TextureImporter:
     21300052: items_5
     21300054: items_6
     21300056: items_7
+    21300058: items_8
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -359,6 +360,16 @@ TextureImporter:
         y: 275
         width: 62
         height: 12
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: items_8
+      rect:
+        serializedVersion: 2
+        x: 344
+        y: 29
+        width: 124
+        height: 34
       alignment: 0
       pivot: {x: .5, y: .5}
       border: {x: 0, y: 0, z: 0, w: 0}
