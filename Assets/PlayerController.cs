@@ -10,24 +10,33 @@ public class PlayerController : MonoBehaviour {
 	public float downSpeed = 0.3f;
 	float flyingSpeed = 0.05f;
 	Vector3 velocity = Vector3.zero;
+
 	bool isEnd = false;
+	bool isFalling = false;
 
 	float screenWidth = 3.2f;
 
 	float objectWidth = 0.24f;
 	float rotateSpeed = 1f;
 
-	public GameObject rainbow;
+	float starDelay = 0.05f;
+	float starDelayCount = 0f;
+	float starDistance = 0.3f;
+
+	public GameObject rainbow; // Set via GUI
+	public GameObject star; // Set via GUI
 	Animator animator;
 
 	// Should not create new object in Update() or FixedUpdate(), so we need these variables
 	Vector3 _p;
 	Vector3 _v = Vector3.zero;
+	Vector3 _starPos = Vector3.zero;
 
 	// Use this for initialization
 	void Start () {
 		Screen.sleepTimeout = SleepTimeout.NeverSleep;
 		animator = GetComponentInChildren<Animator> ();
+
 		// Create 5 first rainbows
 		for (int i = 0; i < 5; i++) {
 			CreateRainbow();
@@ -36,6 +45,26 @@ public class PlayerController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (rigidbody2D.velocity.y < -6) {
+			// Star 
+			starDelayCount += Time.deltaTime;
+			if (starDelayCount > starDelay) {
+				starDelayCount = 0;
+				CreateStar ();
+			}
+			isFalling = true;
+			gameObject.layer = LayerMask.NameToLayer("NoRainbow");
+
+			
+			if (Input.GetKeyDown (KeyCode.Space) || 
+			    Input.touches.Length > 0) {
+				// Go to bottom immediately
+				_p.y = 0.5f;
+				transform.position = _p;
+			}
+		}
+
 		if (isEnd) {
 			if (Input.GetKeyDown (KeyCode.Space) || 
 			    Input.touches.Length > 0) {
@@ -111,7 +140,7 @@ public class PlayerController : MonoBehaviour {
 		} else
 		// Collide with the springs
 		if (collision.collider.tag.Equals ("Spring")) {
-			rigidbody2D.velocity = Vector2.up * jumpSpeed * 1.4f;
+			rigidbody2D.velocity = Vector2.up * jumpSpeed * 1.6f;
 		}
 		// Collide with the black hole
 		if (collision.collider.tag.Equals ("TheBlackHole")) {
@@ -134,8 +163,15 @@ public class PlayerController : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	void CreateRainbow() {
 		Instantiate (rainbow, new Vector3(0, 3f), Quaternion.identity);
+	}
+	void CreateStar() {
+		_starPos.x = Random.Range (-starDistance, starDistance);
+		_starPos.y = Random.Range (-starDistance, starDistance);
+		_starPos.z = 0;
+		GameObject g = (GameObject) Instantiate (star, transform.position + _starPos, Quaternion.identity);
+		g.tag = "CloneStar";
 	}
 }

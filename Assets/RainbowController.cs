@@ -13,7 +13,7 @@ public class RainbowController : MonoBehaviour {
 	float minSpeed = 0.005f;
 	float maxSpeed = 0.03f;
 
-	float springPercent = 0.1f;
+	float springPercent = 0.9f;
 
 	float speed = 0f;
 	float dying = 0f; // 0 = still living, > 0: dying
