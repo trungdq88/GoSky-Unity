@@ -20,7 +20,6 @@ public class PlayerController : MonoBehaviour {
 	float screenWidth = 3.2f;
 
 	float objectWidth = 0.24f;
-	float rotateSpeed = 1f;
 
 	float starDelay = 0.05f;
 	float starDelayCount = 0f;
@@ -34,6 +33,13 @@ public class PlayerController : MonoBehaviour {
 	public GameObject scoreHolder;
 	public GameObject bestScoreHolder;
 	public GameObject resumeBtn; 
+	public AudioClip dieSound;
+	public AudioClip jumpSound;
+	public AudioClip highJumpSound;
+	public AudioClip hitTopSound;
+	public AudioClip nyan1Sound;
+	public AudioClip nyan2Sound;
+	public AudioClip clickSound;
 
 	int bestScoreValue = 0;
 
@@ -48,12 +54,15 @@ public class PlayerController : MonoBehaviour {
 	void Start () {
 		Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
+		// Set position for texts
 		centerPoint = new Vector3 ( Screen.width / 2, Screen.height / 2f,  10f);
 		_p = centerPoint;
-		_p.y -= 90f;
-		bestScoreHolder.transform.position = _p;
-		_p.y += 90f + 170f;
+		// Score
+		_p.y = Screen.height * 0.9f;
 		scoreHolder.transform.position = _p;
+		// Best score
+		_p.y = Screen.height * 0.285f;
+		bestScoreHolder.transform.position = _p;
 
 		animator = GetComponentInChildren<Animator> ();
 
@@ -80,12 +89,15 @@ public class PlayerController : MonoBehaviour {
 				starDelayCount = 0;
 				CreateStar ();
 			}
+			if (isFalling == false) {
+				playEndMusic();
+			}
 			isFalling = true;
 			gameObject.layer = LayerMask.NameToLayer("NoRainbow");
 
 			// If the fish is falling, tap will skip the falling movie
 			if (Input.GetKeyDown (KeyCode.Space) || 
-			    Input.touches.Length > 0) {
+			    Input.touches.Length > 0 && Input.GetTouch(0).phase == TouchPhase.Began) {
 				// Go to bottom immediately
 				_p.y = 0.5f;
 				transform.position = _p;
@@ -95,8 +107,9 @@ public class PlayerController : MonoBehaviour {
 		if (isEnd) {
 			// If the game is end, tap will restart the game
 			if (Input.GetKeyDown (KeyCode.Space) || 
-			    Input.touches.Length > 0) {
+			    Input.touches.Length > 0 && Input.GetTouch(0).phase == TouchPhase.Began) {
 				// Restart game
+				playMusic(clickSound);
 				RainbowController.highBlock = -1200f;
 				Application.LoadLevel( Application.loadedLevel );
 			}
@@ -110,8 +123,8 @@ public class PlayerController : MonoBehaviour {
 
 		// If game is playing, tap will pause the game
 		if (!isFalling && Input.GetKeyDown (KeyCode.Space) || 
-		    Input.touches.Length > 0) {
-			// Pause game
+		    Input.touches.Length > 0 && Input.GetTouch(0).phase == TouchPhase.Began) {
+			// Pause/resume game
 			isPaused = !isPaused;
 			updateGameState();
 		}
@@ -164,6 +177,7 @@ public class PlayerController : MonoBehaviour {
 		// Collide with the bottom
 		if (collision.collider.tag.Equals ("Finish")) {
 			// Reached the bottom, end the game
+			playMusic(dieSound);
 			animator.SetTrigger("die");
 			isEnd = true;
 			return;
@@ -175,14 +189,17 @@ public class PlayerController : MonoBehaviour {
 			if (collision.collider.transform.position.y < transform.position.y) {
 				// If the rainbow is below the fish, then jump up
 				rigidbody2D.velocity = Vector2.up * jumpSpeed;
+				playMusic(jumpSound);
 			} else {
 				// If the rainbow is above the fish, "bounch" the fish down
 				rigidbody2D.velocity = - Vector2.up * downSpeed;
+				playMusic(hitTopSound);
 			}
 		} else
 		// Collide with the springs
 		if (collision.collider.tag.Equals ("Spring")) {
 			rigidbody2D.velocity = Vector2.up * jumpSpeed * 1.6f;
+			playMusic(highJumpSound);
 		}
 		// Collide with the black hole
 		if (collision.collider.tag.Equals ("TheBlackHole")) {
@@ -221,7 +238,7 @@ public class PlayerController : MonoBehaviour {
 			AudioListener.pause = false;
 			resumeBtn.renderer.enabled = false;
 		}
-
+		playMusic(clickSound);
 	}
 	void CreateRainbow() {
 		Instantiate (rainbow, new Vector3(0, 3f), Quaternion.identity);
@@ -232,5 +249,26 @@ public class PlayerController : MonoBehaviour {
 		_starPos.z = 0;
 		GameObject g = (GameObject) Instantiate (star, transform.position + _starPos, Quaternion.identity);
 		g.tag = "CloneStar";
+	}
+	void playMusic(AudioClip clip) {
+		CancelInvoke ("playLoopSection");
+		audio.Stop ();
+		audio.loop = false;
+		audio.clip = clip;
+		audio.Play ();
+	}
+	void playEndMusic() {
+		audio.Stop ();
+		audio.volume = 0.7f;
+		audio.clip = nyan1Sound;
+		audio.Play ();
+		Invoke("playLoopSection", nyan1Sound.length);
+	}
+	void playLoopSection() {
+		audio.Stop ();
+		audio.volume = 0.7f;
+		audio.clip = nyan2Sound;
+		audio.loop = true;
+		audio.Play ();
 	}
 }
