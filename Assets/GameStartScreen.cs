@@ -16,8 +16,12 @@ public class GameStartScreen : MonoBehaviour {
 		if(Time.timeScale==0 && (Input.GetKeyDown (KeyCode.Space) || 
 		                         Input.touches.Length > 0 && Input.GetTouch(0).phase == TouchPhase.Began) ) {
 			Time.timeScale = 1;
-			HideChildren ();
-			
+			HideChildren ();	
+		}
+
+		// End game
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			Application.Quit (); 
 		}
 	}
 	void HideChildren()

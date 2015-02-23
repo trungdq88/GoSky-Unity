@@ -5,7 +5,7 @@ public class CameraMover : MonoBehaviour {
 	public Vector3 velocity = Vector3.zero;
 	
 	float topDistance = 1f;
-	float bottomDistance = 2f;
+	float bottomDistance = 1f;
 
 	// const float ratio = 2.8397f * 750f / 1334f;
 

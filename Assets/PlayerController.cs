@@ -1,8 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using GoogleMobileAds.Api;
 
 public class PlayerController : MonoBehaviour {
+
+	
+	BannerView bannerView;
 
 	int score = 0;
 
@@ -53,6 +57,9 @@ public class PlayerController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
+		// Init ads
+		RequestBanner ();
 
 		// Set position for texts
 		centerPoint = new Vector3 ( Screen.width / 2, Screen.height / 2f,  10f);
@@ -176,7 +183,7 @@ public class PlayerController : MonoBehaviour {
 	void OnCollisionEnter2D(Collision2D collision) {
 		// Collide with the bottom
 		if (collision.collider.tag.Equals ("Finish")) {
-			// Reached the bottom, end the game
+			// Reached the bottom, end the 
 			playMusic(dieSound);
 			animator.SetTrigger("die");
 			isEnd = true;
@@ -230,10 +237,12 @@ public class PlayerController : MonoBehaviour {
 	}
 	void updateGameState() {
 		if (isPaused) {
+			// Pause the game
 			Time.timeScale = 0;
 			AudioListener.pause = true;
 			resumeBtn.renderer.enabled = true;
 		} else {
+			// Resume / start the game
 			Time.timeScale = 1;
 			AudioListener.pause = false;
 			resumeBtn.renderer.enabled = false;
@@ -270,5 +279,24 @@ public class PlayerController : MonoBehaviour {
 		audio.clip = nyan2Sound;
 		audio.loop = true;
 		audio.Play ();
+	}
+
+	
+	private void RequestBanner()
+	{
+		#if UNITY_ANDROID
+		string adUnitId = "ca-app-pub-4299164781315902/5058695476";
+		#elif UNITY_IPHONE
+		string adUnitId = "ca-app-pub-4299164781315902/1385154673";
+		#else
+		string adUnitId = "unexpected_platform";
+		#endif
+		
+		// Create a 320x50 banner at the top of the screen.
+		bannerView = new BannerView(adUnitId, AdSize.Banner, AdPosition.Bottom);
+		// Create an empty ad request.
+		AdRequest request = new AdRequest.Builder().Build();
+		// Load the banner with the request.
+		bannerView.LoadAd(request);
 	}
 }
